@@ -1,11 +1,11 @@
 # Process-Scheduling
 
-The program is called allocate and take the following command line arguments. The arguments can be passed in any order but you can assume that they will be passed exactly once.  
+The program is called allocate and take the following command line arguments. The arguments can be passed in any order but they will be passed exactly once.  
 -f *filename* will specify the name of the file describing the processes.  
 -p processors where processors is one of {1,2,N}, N ≤ 1024.  
 -c an optional parameter.  
   
-The *filename* contains the processes to be executed and has the following format. Each line of the file corresponds to a process. The first line refers to the first process that needs to be executed, and the last line refers to the last process to be executed. Each line consists of a space-separated tuple (time-arrived, process-id, execution-time, parallelisable). You can assume that the file will be sorted by time-arrived which is an integer in [0, 2]) indicating seconds; all process-ids will be distinct integers in the domain of [0, 2]) and the first process will always have time-arrived set to 0; execution-time will be an integer in [1, 2]) indicating seconds; parallelisable is either n or p. If it is p, then the corresponding process is parallelisable; if it is n, it is not. You can ignore n/p when -p is 1. More than one process can arrive at the same time.  
+The *filename* contains the processes to be executed and has the following format. Each line of the file corresponds to a process. The first line refers to the first process that needs to be executed, and the last line refers to the last process to be executed. Each line consists of a space-separated tuple (time-arrived, process-id, execution-time, parallelisable). program will assume that the file will be sorted by time-arrived which is an integer in [0, 2]) indicating seconds; all process-ids will be distinct integers in the domain of [0, 2]) and the first process will always have time-arrived set to 0; execution-time will be an integer in [1, 2]) indicating seconds; parallelisable is either n or p. If it is p, then the corresponding process is parallelisable; if it is n, it is not. program will ignore n/p when -p is 1. More than one process can arrive at the same time.  
   
 Example: ./allocate -f processes.txt -p 1.  
 Given processes.txt with the following information:  
