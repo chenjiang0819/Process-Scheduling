@@ -10,7 +10,6 @@ The *filename* contains the processes to be executed and has the following forma
 Example: ./allocate -f processes.txt -p 1.  
 Given processes.txt with the following information:  
 0 4 30 n  
-2  
 3 2 40 n  
 5 1 20 n  
 20 3 30 n  
