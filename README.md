@@ -1,6 +1,6 @@
 # Process-Scheduling
 
-The program is called allocate and take the following command line arguments. The arguments can be passed in any order but they will be passed exactly once.  
+This program is called allocate and take the following command line arguments. The arguments can be passed in any order but they will be passed exactly once.  
 -f *filename* will specify the name of the file describing the processes.  
 -p processors where processors is one of {1,2,N}, N ≤ 1024.  
 -c an optional parameter.  
