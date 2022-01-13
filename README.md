@@ -19,7 +19,7 @@ The program will simulate execution of 4 processes where process 4 arrives at ti
   
 **Execution transcript**  
   
-For the following events the code will print out a line in the following format:
+For the following events the code will print out a line in the following format:  
 • When a (sub)process starts and every time it resumes its execution: <current-time>,RUNNING,pid=<process id>,remaining_time=<T>,cpu=<cpu-id>\n  
 where:  
 ‘current-time’ refers to the time at which CPU is given to a process;  
