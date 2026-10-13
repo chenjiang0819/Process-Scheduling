@@ -22,10 +22,11 @@ void initial_CPU(int processor_num, list_t** cpu, list_t* free_all_nodes){
 	}
 	//put the leaders for each CPU
 	for(int i = 0; i < processor_num; i++){
-		node_t* new_node = (node_t*)malloc(sizeof(*new_node));
+		node_t* new_node = (node_t*)calloc(1,sizeof(*new_node));
 		assert(new_node != NULL);
 		new_node -> time_arrived = IMPOSSIBLE_NUM;
-        new_node -> process_id =  IMPOSSIBLE_NUM;	        
+        new_node -> process_id =  IMPOSSIBLE_NUM;
+        new_node->sub_id = -1;
 		new_node -> execution_time = INITIAL;
     	new_node -> execution_counter = INITIAL;
     	new_node -> process_turnaround = INITIAL;

@@ -1,20 +1,21 @@
-allocate: allocate.o cpu_units.o scheduling_mechanism.o data_structure.o
-	gcc -o allocate allocate.o cpu_units.o scheduling_mechanism.o data_structure.o -lm -g
+CC ?= cc
+CFLAGS ?= -std=gnu99 -O2 -Wall -Wextra -Wpedantic
+SOURCES = allocate.c cpu_units.c data_structure.c scheduling_mechanism.c
+HEADERS = cpu_units.h data_structure.h scheduling_mechanism.h
 
-allocate.o: allocate.c cpu_units.h scheduling_mechanism.h data_structure.h
-	gcc -c  allocate.c cpu_units.h scheduling_mechanism.h data_structure.h -lm -g
+allocate: $(SOURCES) $(HEADERS)
+	$(CC) $(CFLAGS) $(SOURCES) -lm -o $@
 
-cpu_units.o: cpu_units.c cpu_units.h data_structure.h
-	gcc -c  cpu_units.c cpu_units.h data_structure.h -lm -g
+test: allocate
+	mkdir -p .build
+	python3 -B -m unittest discover -s tests -v
 
-scheduling_mechanism.o: scheduling_mechanism.c scheduling_mechanism.h
-	gcc -c  scheduling_mechanism.c scheduling_mechanism.h -lm -g
+sanitize:
+	mkdir -p .build
+	$(CC) -std=gnu99 -O1 -g -Wall -Wextra -Wpedantic -fsanitize=address,undefined -fno-omit-frame-pointer $(SOURCES) -lm -o .build/allocate-sanitize
+	PROGRAM=$(CURDIR)/.build/allocate-sanitize python3 -B -m unittest discover -s tests -v
 
-data_structure.o: data_structure.c data_structure.h
-	gcc -c  data_structure.c data_structure.h -lm -g
+clean:
+	rm -f allocate *.o *.gch .build/allocate-sanitize
 
-
-
-
-
-
+.PHONY: test sanitize clean

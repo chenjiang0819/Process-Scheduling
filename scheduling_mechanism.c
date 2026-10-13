@@ -5,6 +5,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <limits.h>
 
 #include "scheduling_mechanism.h"
 
@@ -34,8 +35,9 @@ void forking (int* forked_num, node_t** forked, int processor_num, node_t* assig
 				node_t* new_node = (node_t*)malloc(sizeof(*new_node));
 	    		assert(new_node != NULL);
 				new_node -> time_arrived = assign -> time_arrived;
-		        new_node -> process_id =  assign -> process_id + fork_id;	    
-				new_node -> execution_time = ceill(assign -> execution_time / processor_num) + 1;		
+		        new_node -> process_id =  assign -> process_id;
+                new_node->sub_id=count;
+                new_node -> execution_time = ceill((double)assign -> execution_time / processor_num) + 1;
 		    	new_node -> execution_counter = new_node -> execution_time;
 		    	new_node -> process_turnaround = INITIAL;
 				new_node -> process_overhead = INITIAL;
@@ -57,8 +59,9 @@ void forking (int* forked_num, node_t** forked, int processor_num, node_t* assig
 				node_t* new_node = (node_t*)malloc(sizeof(*new_node));
 	    		assert(new_node != NULL);
 				new_node -> time_arrived = assign -> time_arrived;
-		        new_node -> process_id =  assign -> process_id + fork_id;
-				new_node -> execution_time = ceill(assign -> execution_time / processor_num) + 1;
+		        new_node -> process_id =  assign -> process_id;
+                new_node->sub_id=count;
+				new_node -> execution_time = ceill((double)assign -> execution_time / processor_num) + 1;
 		    	new_node -> execution_counter = new_node -> execution_time;
 		    	new_node -> process_turnaround = INITIAL;
 				new_node -> process_overhead = INITIAL;
@@ -81,8 +84,9 @@ void forking (int* forked_num, node_t** forked, int processor_num, node_t* assig
 			node_t* new_node = (node_t*)malloc(sizeof(*new_node));
     		assert(new_node != NULL);
 			new_node -> time_arrived = assign -> time_arrived;
-	        new_node -> process_id =  assign -> process_id + fork_id;	    
-			new_node -> execution_time = ceill(assign -> execution_time / PARAMETER) + 1;		
+	        new_node -> process_id =  assign -> process_id;
+                new_node->sub_id=count;
+            new_node -> execution_time = ceill((double)assign -> execution_time / PARAMETER) + 1;
 	    	new_node -> execution_counter = new_node -> execution_time;
 	    	new_node -> process_turnaround = INITIAL;
 			new_node -> process_overhead = INITIAL;
@@ -104,9 +108,10 @@ void forking (int* forked_num, node_t** forked, int processor_num, node_t* assig
 int find_mini_cpu(list_t** cpu, int processor_num, int max_time, int* cpu_n_remain){
 	int remain;
 	int mini_remain;
-	int mini_task_cpu_id = IMPOSSIBLE_NUM;
+	int mini_task_cpu_id = 0;
 	node_t* check;
-	mini_remain = max_time;
+	(void)max_time;
+    mini_remain = INT_MAX;
 
 	for(int i = 0; i < processor_num; i++){
 		remain = INITIAL;
@@ -130,13 +135,17 @@ int find_mini_cpu(list_t** cpu, int processor_num, int max_time, int* cpu_n_rema
 
 
 //comparing function for quick sort - small to big
-int cmpfunc (const void * input1, const void * input2){
-   return ( (*(node_t**)input1) -> execution_time - (*(node_t**)input2) -> execution_time);
+int cmpfunc(const void *input1, const void *input2){
+    node_t *a=*(node_t**)input1, *b=*(node_t**)input2;
+    if (a->execution_time!=b->execution_time) return a->execution_time>b->execution_time ? 1 : -1;
+    return (a->process_id>b->process_id)-(a->process_id<b->process_id);
 }
 
 //comparing function for quick sort- big to small
-int cmpfunc_task (const void * input1, const void * input2){
-   return ( (*(node_t**)input2) -> execution_time - (*(node_t**)input1) -> execution_time);
+int cmpfunc_task(const void *input1, const void *input2){
+    node_t *a=*(node_t**)input1, *b=*(node_t**)input2;
+    if (a->execution_time!=b->execution_time) return a->execution_time<b->execution_time ? 1 : -1;
+    return (a->process_id>b->process_id)-(a->process_id<b->process_id);
 }
 
 
@@ -145,7 +154,7 @@ void assign_prcesses(list_t** cpu, node_t** input_doc, int processor_num, int to
 	int max_time, int total_time, int* cpu_que, int my_algorithm, list_t* free_all_nodes, node_t** waiting_area){
 	int forked_num = INITIAL;
 	int mini_task_cpu = IMPOSSIBLE_NUM; 
-	int static counter = INITIAL;
+	static int counter = INITIAL;
 	int cpu_n_remain [processor_num]; 
 	//to store the sub-processes
 	node_t** forked = (node_t**) malloc (processor_num * sizeof(*forked));
@@ -161,12 +170,13 @@ void assign_prcesses(list_t** cpu, node_t** input_doc, int processor_num, int to
 	for(int i = 0; i < total_processes; i++){
 		//check if the processes have arrived	
 		if(input_doc[i] -> time_arrived == total_time){
+            (*cpu_que)++;
 			//assign processes acording to thier type(parallelisable or not)
 			if(input_doc[i] -> parallelisable == 'n' || processor_num == 1){
 				if(my_algorithm == OFF){					
 					mini_task_cpu = find_mini_cpu(cpu, processor_num, max_time, cpu_n_remain);
 					cpu[mini_task_cpu] = insert_node(cpu[mini_task_cpu], input_doc[i]);
-					(*cpu_que) ++;
+
 				}else{
 					//put the tuples in the waiting area first
 					waiting_area[counter ++] = input_doc[i];
@@ -181,7 +191,7 @@ void assign_prcesses(list_t** cpu, node_t** input_doc, int processor_num, int to
 					}
 				}else{
 					if(input_doc[i] -> execution_time <= 2 || processor_num <= 2){
-						input_doc[i] -> parallelisable == 'n';
+						input_doc[i] -> parallelisable = 'n';
 						//put the tuples in the waiting area first
 						waiting_area[counter ++] = input_doc[i];
 						
@@ -190,11 +200,11 @@ void assign_prcesses(list_t** cpu, node_t** input_doc, int processor_num, int to
 						for(int i = 0; i < forked_num; i++){
 							//put the tuples in the waiting area first			
 							waiting_area[counter ++] = forked[i];
-							free_all_nodes = insert_node_for_free(free_all_nodes, waiting_area[0]);
+							free_all_nodes = insert_node_for_free(free_all_nodes, forked[i]);
 		   				}
 					}
 				}
-				(*cpu_que) ++;
+
 			}
 		}
     }
@@ -213,7 +223,7 @@ void assign_prcesses(list_t** cpu, node_t** input_doc, int processor_num, int to
 					waiting_area[INITIAL] = waiting_area[--counter];
 				}
 				waiting_area[counter] = NULL;
-				(*cpu_que) ++;
+
 			}
 		}
 	}	
@@ -226,7 +236,7 @@ void scheduling (list_t** cpu ,  node_t** input_doc, int processor_num, int tota
 	int max_time, int* total_time, int my_algorithm, list_t* free_all_nodes){
 	int minimum;
 	int cpu_que = INITIAL;
-	float check_change[processor_num];
+	node_t *check_change[processor_num];
 	node_t* shortest[processor_num];
 	node_t* finish_process[processor_num];
 	node_t* waiting_area [(total_processes * INCLUDE_ALL)];
@@ -235,7 +245,7 @@ void scheduling (list_t** cpu ,  node_t** input_doc, int processor_num, int tota
 
 	//initialise all varibles 
 	for( int i = 0; i< processor_num; i++){
-		check_change[i] = IMPOSSIBLE_NUM;
+		check_change[i] = NULL;
 		shortest[i] = NULL;
 	}
 	for(int i = 0; i < total_processes * INCLUDE_ALL ; i++){
@@ -243,16 +253,25 @@ void scheduling (list_t** cpu ,  node_t** input_doc, int processor_num, int tota
 	}
 
 	//scheduler works one time unit at a time
-	while((*total_time) <= max_time){
+	while(total_processes>0){
+        if (cpu_que==0) {
+            int next=INT_MAX, ready=0;
+            for (int j=0;j<keep_total;j++) {
+                if (input_doc[j]->time_arrived==*total_time) ready=1;
+                if (input_doc[j]->time_arrived>*total_time && input_doc[j]->time_arrived<next) next=input_doc[j]->time_arrived;
+            }
+            if (!ready && next!=INT_MAX) *total_time=next;
+        }
 		//initialise finished list
 		for( int i = 0; i< processor_num; i++){
 			finish_process[i] = NULL;
+            shortest[i] = NULL;
 		}
 		//assigning the processes
 		assign_prcesses(cpu ,input_doc, processor_num, keep_total, max_time, *total_time, &cpu_que, my_algorithm, free_all_nodes, waiting_area);
 		for(int i = 0; i < processor_num; i++){
 			check = cpu[i] -> head;
-			minimum = max_time;
+			minimum = INT_MAX;
 			//check if many process has finished 
 			while(check != NULL){
 				if(check -> execution_counter == 0 && check -> status != FINISH){
@@ -260,7 +279,7 @@ void scheduling (list_t** cpu ,  node_t** input_doc, int processor_num, int tota
 					if(check -> parallelisable == 'p' || check -> parallelisable == 'n'){
 						total_processes --;
 						check -> process_turnaround = (*total_time) - check -> time_arrived;
-				    	check -> process_overhead = (float)(check -> process_turnaround) / check -> execution_time;	
+                        check -> process_overhead = (double)(check -> process_turnaround) / check -> execution_time;
 				    	finish_process[i] = check;
 				    	cpu_que --;	    		
 					}else if (check -> parallelisable == 'f'){
@@ -268,7 +287,7 @@ void scheduling (list_t** cpu ,  node_t** input_doc, int processor_num, int tota
 						if(check -> parent -> status == FINISH){			
 							total_processes --;
 							check -> parent -> process_turnaround = (*total_time) - check  -> parent -> time_arrived;
-				    		check -> parent -> process_overhead = (float)(check  -> parent -> process_turnaround) / check -> parent -> execution_time;
+                            check -> parent -> process_overhead = (double)(check  -> parent -> process_turnaround) / check -> parent -> execution_time;
 				    		finish_process[i] = check -> parent;
 				    		cpu_que --;	
 						}
@@ -278,7 +297,7 @@ void scheduling (list_t** cpu ,  node_t** input_doc, int processor_num, int tota
 				if(minimum > check -> execution_counter && check -> status != FINISH){
 					minimum = check -> execution_counter;
 					shortest[i] = check;
-				}else if(minimum == check -> execution_counter && shortest[i] -> process_id > check -> process_id){
+				}else if(check -> status != FINISH && minimum == check -> execution_counter && (!shortest[i] || shortest[i] -> process_id > check -> process_id)){
 					shortest[i] = check;
 				}		
 				check = check -> next;
@@ -288,7 +307,7 @@ void scheduling (list_t** cpu ,  node_t** input_doc, int processor_num, int tota
 		//print the results
 		for(int i = 0; i < processor_num; i++){
 			if(finish_process[i] != NULL){
-				printf("%d,FINISHED,pid=%g,proc_remaining=%d\n",*total_time, finish_process[i] -> process_id, cpu_que);	
+                printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",*total_time, finish_process[i] -> process_id, cpu_que);
 			}
 		}
 		//if all processes have finished, stop scheduling
@@ -297,19 +316,20 @@ void scheduling (list_t** cpu ,  node_t** input_doc, int processor_num, int tota
 		}
 		for(int i = 0; i < processor_num; i++){
 			if(shortest[i] != NULL){
-				if(check_change[i] != shortest[i] -> process_id){
+				if(check_change[i] != shortest[i]){
 					if(shortest[i] -> parallelisable == 'f'){
-						printf("%d,RUNNING,pid=%.1f,remaining_time=%d,cpu=%d\n", *total_time, shortest[i] -> process_id, shortest[i] -> execution_counter, i);
+						printf("%d,RUNNING,pid=%d.%d,remaining_time=%d,cpu=%d\n", *total_time, shortest[i] -> process_id, shortest[i]->sub_id, shortest[i] -> execution_counter, i);
 					}else{
-						printf("%d,RUNNING,pid=%.f,remaining_time=%d,cpu=%d\n", *total_time, shortest[i] -> process_id, shortest[i] -> execution_counter, i);
+						printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n", *total_time, shortest[i] -> process_id, shortest[i] -> execution_counter, i);
 					}
-					check_change[i] = shortest[i] -> process_id;
+					check_change[i] = shortest[i];
 				}
 				//execution the arrangement 
 				if(shortest[i] -> status != FINISH && shortest[i] -> execution_counter != 0){
 					(shortest[i] -> execution_counter) --;
 				}
 			}
+            else check_change[i]=NULL;
 		}
 		(*total_time) ++;
 	} 
