@@ -10,11 +10,12 @@ typedef struct node node_t;
 //nodes for recording the tuples
 struct node{
 	int time_arrived;
-	float process_id;
-	float execution_time;
+	int process_id;
+    int sub_id;
+	int execution_time;
 	int execution_counter;
 	int process_turnaround;
-	float process_overhead;
+	double process_overhead;
     char parallelisable;
     int status;
     node_t* free_next;
@@ -31,7 +32,7 @@ typedef struct{
 /****************************************************************/
 
 //function for making a new empty linked list 
-list_t* make_empty_list();
+list_t* make_empty_list(void);
 
 //list in the CPU
 list_t* insert_node(list_t* list, node_t* new_node);
