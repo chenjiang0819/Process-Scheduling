@@ -1,5 +1,13 @@
 # CPU Process Scheduling Simulator
 
+## Academic Context
+
+University: University of Melbourne  
+Course: COMP30023 Computer Systems, Assignment 1  
+Year: 2021  
+Project type: individual
+
+
 ## Overview
 
 A handwritten C simulation of preemptive shortest-remaining-time scheduling across one or multiple CPUs, including explicit parallel-process decomposition and an alternative allocation strategy.
