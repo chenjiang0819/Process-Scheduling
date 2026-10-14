@@ -1,65 +1,51 @@
 # CPU Process Scheduling Simulator
 
-## Academic Context
+A handwritten C simulation of preemptive shortest-remaining-time scheduling across one or multiple CPUs, including explicit parallel-process decomposition and an alternative allocation strategy.
+
+Chen Jiang’s University of Melbourne computing coursework.
 
 University: University of Melbourne  
 Course: COMP30023 Computer Systems, Assignment 1  
 Year: 2021  
-Project type: individual
 
-
-## Overview
-
-A handwritten C simulation of preemptive shortest-remaining-time scheduling across one or multiple CPUs, including explicit parallel-process decomposition and an alternative allocation strategy.
-
-## Original Context
-
-Chen Jiang’s COMP30023 Computer Systems coursework, with an original source context dated September 2021. The CPU queues and per-unit-time scheduling model are preserved. The preserved pre-maintenance snapshot is `65183a9e5ea5de2ce38151157d3b473da0c133d2`;
-its most recent original commit is dated 2022-01-13. This date describes Git evidence,
-not necessarily the complete implementation period.
-
-## What I Implemented
+## Implementation
 
 Linked CPU queues, least-workload allocation, process/subprocess state, shortest-remaining-time selection, alternative waiting-area allocation, and turnaround/overhead/makespan statistics.
 
-## Technical Approach
+## Technical approach
 
 The original scheduler advances active execution one time unit at a time. Ready work is allocated to CPUs by remaining workload and selected by remaining execution time, with deterministic identifier tie breaks.
 
 Parallel parents retain logical completion state while children carry execution counters; decimal-looking subprocess identifiers are now rendered from exact parent/subprocess integers. Idle periods can advance to the next arrival without changing active execution semantics.
 
-## Build / Run
+## Run
 
 Run `make`, then `./allocate -f processes.txt -p 2` (optional `-c` selects the original alternative strategy). Run `make test` and `make sanitize`.
 
-## Testing
+## Checks and results
 
 - Apple Clang 21: normal -O2 build and regression suite passed.
 - AddressSanitizer + UndefinedBehaviorSanitizer regression suite passed on macOS.
 - GCC 14.3 in a network-disabled Linux container: strict -Werror sanitizer checks passed, including LeakSanitizer defaults.
-- Critical make test checks are rerun on the merged default branch before pushing it.
 - make test: seven methods passed, including 30 independent SRTF-oracle cases, 100-job cases, both strategies, 1–1,024 processors, idle gaps, simultaneous completion, and repeated execution.
 - Strict Clang -O0 -Werror build and regression suite passed.
-- Evidence: scheduler_before_one.log, scheduler_before_idle.log, scheduler_after_tests.log, scheduler_O0_tests.log, scheduler_linux_tests.log.
 
-## 2026 Maintenance
+## 2026 maintenance
 
 - Validated CLI flags and ordered unique process records; rejected malformed, empty, zero-duration, and overflow inputs.
 - Corrected idle-gap termination, safe candidate selection, queued-job accounting, serialized fallback state, and child ownership registration.
 - Separated parent/subprocess IDs to preserve exact large IDs and suffixes beyond 9.
 - Added deterministic fixtures and an independently implemented scheduling oracle; retained both original strategies.
 
-The later work is AI-assisted maintenance, separate from the original implementation.
-The exact original snapshot remains on `archive/handwritten-original`.
-See [AI_PROJECT_REVIEW.md](AI_PROJECT_REVIEW.md) for a technical review.
+These changes are 2026 AI-assisted maintenance of the original student implementation.
 
-## Known Limitations
+## Usage notes
 
 - The input arrival order must be nondecreasing and process IDs must be unique.
 - The simulation uses representable integer time; inputs whose scheduling horizon overflows are rejected.
 - The alternative strategy is preserved as a heuristic, not claimed to be globally optimal.
 
-## Original Assignment Notes
+## Original project notes
 
 # Process-Scheduling
 
@@ -114,4 +100,4 @@ When the simulation is completed, 3 lines with the following performance statist
 Example: For the invocation with arguments -p 1 and the processes file as described above, the simulation would print：  
 Turnaround time 62  
 Time overhead 2.93 1.9  
-Makespan 120  
+Makespan 120
